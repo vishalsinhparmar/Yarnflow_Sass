@@ -122,7 +122,7 @@ describe('🎨 YarnFlow Client Components Production Tests', () => {
       render(<WithRouter><Login /></WithRouter>);
 
       expect(screen.getByText('YarnFlow')).toBeInTheDocument();
-      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email or username/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /sign in to dashboard/i })).toBeInTheDocument();
     });
@@ -149,17 +149,17 @@ describe('🎨 YarnFlow Client Components Production Tests', () => {
 
     it('✅ remember me checkbox is present', () => {
       render(<WithRouter><Login /></WithRouter>);
-      expect(screen.getByLabelText(/remember my credentials/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/remember my email/i)).toBeInTheDocument();
     });
 
-    it('✅ public registration link is intentionally hidden', () => {
+    it('✅ company registration link is available', () => {
       render(<WithRouter><Login /></WithRouter>);
-      expect(screen.queryByRole('link', { name: /create one now/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /register your company/i })).toHaveAttribute('href', '/register');
     });
 
     it('✅ XSS payload in email field does not execute script', () => {
       render(<WithRouter><Login /></WithRouter>);
-      const emailInput = screen.getByLabelText(/email address/i);
+      const emailInput = screen.getByLabelText(/email or username/i);
       const xss = '<script>window.__xss=1</script>';
       fireEvent.change(emailInput, { target: { value: xss } });
       expect(emailInput.value).toBe(xss);
@@ -168,7 +168,8 @@ describe('🎨 YarnFlow Client Components Production Tests', () => {
 
     it('✅ email field has correct HTML type', () => {
       render(<WithRouter><Login /></WithRouter>);
-      expect(screen.getByLabelText(/email address/i)).toHaveAttribute('type', 'email');
+      expect(screen.getByLabelText(/email or username/i)).toHaveAttribute('type', 'text');
+      expect(screen.getByLabelText(/company code or name/i)).toBeRequired();
     });
   });
 
@@ -287,7 +288,7 @@ describe('🎨 YarnFlow Client Components Production Tests', () => {
       const { AuthProvider } = await import('../context/AuthContext');
 
       render(
-        <MemoryRouter initialEntries={['/dashboard']}>
+        <MemoryRouter initialEntries={['/app/dashboard']}>
           <AuthProvider>
             <ProtectedRoute>
               <div>Secret Content</div>
@@ -308,7 +309,7 @@ describe('🎨 YarnFlow Client Components Production Tests', () => {
     it('✅ common.js apiRequest attaches Bearer token from localStorage', async () => {
       const { apiRequest } = await import('../services/common');
 
-      global.localStorage.getItem = vi.fn((key) => key === 'token' ? 'test-jwt' : null);
+      global.localStorage.getItem = vi.fn((key) => key === 'yarnflow-saas.tenant.token' ? 'test-jwt' : null);
       global.fetch = vi.fn(() =>
         Promise.resolve({ ok: true, json: () => Promise.resolve({ success: true }) })
       );

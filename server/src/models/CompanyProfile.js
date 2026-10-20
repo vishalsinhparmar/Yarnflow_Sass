@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 /**
  * CompanyProfile Model
@@ -150,6 +151,8 @@ const companyProfileSchema = new mongoose.Schema(
 
 // slug index is created by unique:true above
 companyProfileSchema.index({ isActive: 1 });
+
+companyProfileSchema.plugin(tenantPlugin);
 
 const CompanyProfile = mongoose.model('CompanyProfile', companyProfileSchema);
 

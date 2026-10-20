@@ -5,12 +5,12 @@ import SideBarApp from "../components/SideBarApp/SideBarApp";
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
-    localStorage.getItem('yarnflow-sidebar-collapsed') === 'true'
+    localStorage.getItem('yarnflow-saas.sidebar-collapsed') === 'true'
   );
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('yarnflow-sidebar-collapsed', String(sidebarCollapsed));
+    localStorage.setItem('yarnflow-saas.sidebar-collapsed', String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
   useEffect(() => {

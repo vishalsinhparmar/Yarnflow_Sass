@@ -114,7 +114,7 @@ describe('Dashboard operational overview', () => {
     expect(screen.getByText('10 No Panipat')).toBeInTheDocument();
     expect(screen.getByText('PKRK/GRN/012')).toBeInTheDocument();
     expect(screen.getByLabelText('Jul received 250 kg')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Purchase orders/i })).toHaveAttribute('href', '/purchase-order');
+    expect(screen.getByRole('link', { name: /Purchase orders/i })).toHaveAttribute('href', '/app/purchase-order');
   });
 
   it('refreshes all dashboard sources from the header control', () => {

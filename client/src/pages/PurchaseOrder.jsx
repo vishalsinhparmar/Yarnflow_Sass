@@ -145,7 +145,7 @@ const PurchaseOrder = () => {
           break;
         case 'createGRN':
           // Navigate to goods-receipt page with PO pre-selected
-          navigate('/goods-receipt', { state: { selectedPurchaseOrderId: po._id, openCreateModal: true } });
+          navigate('/app/goods-receipt', { state: { selectedPurchaseOrderId: po._id, openCreateModal: true } });
           break;
         default:
           break;

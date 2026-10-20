@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const categorySchema = new mongoose.Schema({
   categoryName: {
@@ -22,5 +23,7 @@ const categorySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+categorySchema.plugin(tenantPlugin);
 
 export default mongoose.model('Category', categorySchema);

@@ -1,279 +1,93 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff, UserPlus, ShieldCheck, Loader2 } from 'lucide-react';
-import AuthErrorCard from '../components/common/AuthErrorCard';
-import { getAuthErrorDetails } from '../utils/authError';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Building2, CheckCircle2, Loader2 } from 'lucide-react';
+import { saasAPI } from '../services/saasAPI';
+import { PublicShell, fieldClass, buttonClass } from './SaaSPages';
+
+const fields = [
+  ['companyName', 'Company name', true],
+  ['companyType', 'Company type', true],
+  ['contactPerson', 'Contact person', true],
+  ['phone', 'Phone', true, 'tel'],
+  ['email', 'Business email', true, 'email'],
+  ['address', 'Address', true],
+  ['city', 'City', true],
+  ['state', 'State', true],
+  ['pincode', 'Pincode', true],
+  ['gstin', 'GSTIN', false],
+  ['website', 'Website', false, 'url'],
+];
 
 const Register = () => {
-  const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState(Object.fromEntries(fields.map(([key]) => [key, ''])));
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [submitError, setSubmitError] = useState(null);
+  const [submitError, setSubmitError] = useState('');
+  const [result, setResult] = useState(null);
 
   // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (submitError) setSubmitError(null);
-    
+  const handleChange = e => {
+    setFormData(previous => ({ ...previous, [e.target.name]: e.target.value }));
     // Clear error for this field
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: '',
-      }));
-    }
+    setSubmitError('');
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setSubmitError(null);
-    setIsLoading(true);
-
+    setIsLoading(true); setSubmitError('');
     try {
-      await register(formData.email, formData.password);
-      navigate('/dashboard');
-    } catch (error) {
-      setSubmitError(getAuthErrorDetails(error, 'register'));
-    } finally {
-      setIsLoading(false);
-    }
+      const response = await saasAPI.register(Object.fromEntries(Object.entries(formData).map(([key, value]) => [key, value.trim()])));
+      if (!response.data?.companyCode) throw new Error('Registration response did not contain a company code. Please contact support before submitting again.');
+      setResult(response.data);
+    } catch (error) { setSubmitError(error.message); }
+    finally { setIsLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-6 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
+    <PublicShell>
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
-
-      <div className="max-w-md w-full space-y-4 relative z-10">
+      <main className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
         {/* Header */}
-        <div className="text-center">
-          <div className="flex justify-center mb-3">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl blur-md opacity-50"></div>
-              <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-3 shadow-2xl">
-                <UserPlus className="w-8 h-8 text-white" />
-              </div>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">YarnFlow</h1>
-          <h2 className="text-xl font-semibold text-white mb-1">Create Account</h2>
-          <p className="text-sm text-gray-400">
-            Register to access the management system
-          </p>
+        <div className="mb-8 max-w-2xl">
+          <Building2 className="mb-5 h-10 w-10 text-orange-600" />
+          <p className="text-xs font-bold uppercase tracking-widest text-orange-600">Your next chapter starts here</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Register your company</h1>
+          <p className="mt-4 leading-relaxed text-slate-500">Tell us about your business. Our team will review your registration and prepare your company workspace.</p>
         </div>
-
         {/* Form Card */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8 space-y-6">
-          <AuthErrorCard
-            error={submitError}
-            onDismiss={() => setSubmitError(null)}
-            onRetry={submitError?.canRetry ? handleSubmit : undefined}
-            isRetrying={isLoading}
-          />
-          <form onSubmit={handleSubmit} className="space-y-5">
+        {result ? <section role="status" className="rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm">
+          <CheckCircle2 className="mb-4 h-12 w-12 text-emerald-600" />
+          <h2 className="text-2xl font-bold">Registration received</h2>
+          <p className="mt-3 text-slate-600">Your company registration is pending approval. Registration does not provide access to the ERP.</p>
+          <div className="my-6 rounded-xl border border-orange-200 bg-orange-50 p-5"><p className="text-xs font-semibold uppercase tracking-widest text-orange-700">Save your company code</p><p className="mt-2 break-all font-mono text-3xl font-bold text-slate-900">{result.companyCode}</p><p className="mt-2 text-sm capitalize text-slate-600">Status: {result.status || 'pending'}</p></div>
+          <p className="mb-6 text-sm leading-6 text-slate-500">Once approved, your company administrator will receive access credentials through your onboarding contact. Use your company code when signing in.</p>
+          <Link className={buttonClass} to="/">Back to YarnFlow</Link>
+        </section> : <div className="grid gap-8 lg:grid-cols-[1fr_260px]">
+          <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            {submitError && <p role="alert" className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">{submitError}</p>}
+            <h2 className="mb-6 text-lg font-semibold">Company information</h2>
             {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
-                Email Address
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-orange-400 transition-colors" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-3 bg-white/10 border ${
-                    errors.email ? 'border-red-500' : 'border-white/20'
-                  } rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
-                  placeholder="admin@yarnflow.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-              )}
+            <div className="grid gap-5 sm:grid-cols-2">
+              {fields.map(([name, label, required, type = 'text']) => <label key={name} className={`block text-sm font-medium ${name === 'address' ? 'sm:col-span-2' : ''}`}>
+                <span className="mb-2 block">{label} {required ? <span className="text-orange-600">*</span> : <span className="font-normal text-slate-400">(optional)</span>}</span>
+                {name === 'companyType' ? <select className={fieldClass} name={name} required value={formData[name]} onChange={handleChange}>
+                  <option value="">Select company type</option>
+                  {['Manufacturer', 'Trader', 'Distributor', 'Wholesaler', 'Retailer', 'Other'].map(value => <option key={value} value={value}>{value}</option>)}
+                </select> : <input className={fieldClass} name={name} type={type} required={required} maxLength={name === 'gstin' ? 15 : name === 'pincode' ? 6 : 250} pattern={name === 'pincode' ? '[0-9]{6}' : name === 'gstin' ? '[0-9A-Za-z]{15}' : undefined} inputMode={name === 'pincode' ? 'numeric' : undefined} placeholder={name === 'website' ? 'https://example.com' : undefined} value={formData[name]} onChange={handleChange} />}
+              </label>)}
             </div>
-
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
-                Password
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-400 transition-colors" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-12 py-3 bg-white/10 border ${
-                    errors.password ? 'border-red-500' : 'border-white/20'
-                  } rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-orange-400 transition-colors" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-orange-400 transition-colors" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-400">{errors.password}</p>
-              )}
-            </div>
-
             {/* Confirm Password Field */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-orange-400 transition-colors" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`block w-full pl-10 pr-12 py-3 bg-white/10 border ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-white/20'
-                  } rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-orange-400 transition-colors" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-orange-400 transition-colors" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-400">{errors.confirmPassword}</p>
-              )}
-            </div>
-
+            <p className="mt-6 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">No password or ERP access is created at this stage. Your registration is reviewed by the platform administrator.</p>
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                  Creating account...
-                </div>
-              ) : (
-                <>
-                  <UserPlus className="h-5 w-5 mr-2" />
-                  Create Admin Account
-                </>
-              )}
-            </button>
+            <button className={`${buttonClass} mt-6 w-full`} disabled={isLoading}>{isLoading && <Loader2 className="h-4 w-4 animate-spin" />}{isLoading ? 'Submitting registration…' : 'Submit company registration'}</button>
+            {/* Login Link */}
+            <p className="mt-5 text-center text-sm text-slate-500">Already registered? <Link to="/login" className="font-semibold text-orange-600">Sign in</Link></p>
           </form>
-
-          {/* Login Link */}
-          <div className="text-center pt-4 border-t border-white/20">
-            <p className="text-sm text-gray-300">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-semibold text-orange-400 hover:text-orange-300 transition-colors"
-              >
-                Sign in here
-              </Link>
-            </p>
-          </div>
-        </div>
-
+          <aside className="h-fit rounded-2xl bg-slate-900 p-6 text-white"><h2 className="text-lg font-semibold">What happens next?</h2><ol className="mt-6 space-y-6">{[['01', 'Submit your details', 'Receive a unique company code.'], ['02', 'Company review', 'Our team reviews your registration.'], ['03', 'Get your workspace', 'After approval, your admin can sign in and set up your team.']].map(([step, title, text]) => <li key={step}><p className="text-xs font-bold text-orange-400">STEP {step}</p><h3 className="mt-1 font-medium">{title}</h3><p className="mt-1 text-xs leading-5 text-slate-400">{text}</p></li>)}</ol></aside>
+        </div>}
         {/* Footer */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500">
-            © 2024 YarnFlow. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </div>
+      </main>
+    </PublicShell>
   );
 };
 

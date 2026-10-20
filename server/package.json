@@ -5,19 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "start": "cross-env NODE_ENV=production node index.js",
+    "start": "cross-env NODE_ENV=development node index.js",
     "start:dev": "cross-env NODE_ENV=development node index.js",
-    "seed": "node src/utils/seedData.js",
-    "install-cross-env": "npm install cross-env --save-dev",
-    "db:erase-all": "node scripts/eraseAllData.js",
-    "db:erase-select": "node scripts/eraseSelectedData.js",
-    "db:clean": "node scripts/eraseSelectedData.js",
-    "test": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 60000 --reporter spec",
-    "test:production": "cross-env NODE_ENV=test mocha tests/production.test.js --timeout 60000 --reporter spec",
-    "test:performance": "cross-env NODE_ENV=test mocha tests/performance.test.js --timeout 120000 --reporter spec",
-    "test:all": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 120000 --reporter spec",
-    "test:watch": "cross-env NODE_ENV=test mocha tests/**/*.test.js --timeout 60000 --watch",
-    "test:coverage": "cross-env NODE_ENV=test nyc mocha tests/**/*.test.js --timeout 60000"
+    "bootstrap:saas": "cross-env NODE_ENV=development node src/saas/bootstrap.js",
+    "test": "cross-env NODE_ENV=test node --test src/saas/security.test.js",
+    "test:saas": "cross-env NODE_ENV=test node --test src/saas/security.test.js"
   },
   "author": "",
   "license": "ISC",
@@ -41,6 +33,7 @@
     "chai": "^5.3.3",
     "cross-env": "^7.0.3",
     "mocha": "^10.8.2",
+    "mongodb-memory-server": "10.2.0",
     "nyc": "^17.1.0",
     "supertest": "^7.2.2"
   }

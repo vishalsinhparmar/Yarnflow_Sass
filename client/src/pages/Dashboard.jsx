@@ -298,28 +298,28 @@ const Dashboard = () => {
             detail={`${number(operations.purchaseOrders?.thisMonth)} Created This Month`}
             icon={ShoppingCart}
             label="Purchase orders"
-            to="/purchase-order"
+            to="/app/purchase-order"
             value={operations.purchaseOrders?.open}
           />
           <PipelineStage
             detail={`${number(operations.grns?.complete)} complete`}
             icon={ClipboardCheck}
             label="Goods receipts"
-            to="/goods-receipt"
+            to="/app/goods-receipt"
             value={operations.grns?.total}
           />
           <PipelineStage
             detail={`${number(operations.salesOrders?.processing)} processing`}
             icon={PackageCheck}
             label="Sales orders"
-            to="/sales-order"
+            to="/app/sales-order"
             value={operations.salesOrders?.open}
           />
           <PipelineStage
             detail={`${number(operations.challans?.dispatched)} in transit`}
             icon={Truck}
             label="Sales challans"
-            to="/sales-challan"
+            to="/app/sales-challan"
             value={operations.challans?.open}
           />
         </div>
@@ -496,7 +496,7 @@ const Dashboard = () => {
           </div>
           <Link
             className="mt-4 flex items-center justify-between rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-            to="/master-data"
+            to="/app/master-data"
           >
             Open master data
             <ArrowUpRight className="h-4 w-4" />

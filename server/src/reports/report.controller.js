@@ -12,10 +12,11 @@ import {
 } from './report.service.js';
 import { sendExcel } from './report.export.service.js';
 import { generateReportPDF } from '../utils/reportPdfGenerator.js';
+import { canReadReport } from './report.access.js';
 
 export const listReports = async (req, res) => {
   try {
-    const reports = getReportsList();
+    const reports = getReportsList().filter(report => canReadReport(req, report.key));
     res.json({ success: true, data: reports });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -77,7 +78,7 @@ export const lookupOptions = async (req, res) => {
 
 export const savedReportsList = async (req, res) => {
   try {
-    const reports = await listSavedReports(req.user);
+    const reports = (await listSavedReports(req.user)).filter(report => canReadReport(req, report.reportKey));
     res.json({ success: true, data: reports });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -133,7 +134,7 @@ export const listDownloads = async (req, res) => {
     const downloads = await ReportDownload.find({ createdBy: userEmail })
       .sort({ generatedAt: -1 })
       .lean();
-    res.json({ success: true, data: downloads });
+    res.json({ success: true, data: downloads.filter(download => canReadReport(req, download.reportKey)) });
   } catch (err) {
     console.error('Error listing downloads:', err);
     res.status(500).json({ success: false, message: err.message });

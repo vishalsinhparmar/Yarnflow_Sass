@@ -8,11 +8,12 @@ export default function ReportDownloads() {
   // Initialize global setter
   useEffect(() => {
     setGlobalDownloadsSetter(setDownloads);
+    return () => setGlobalDownloadsSetter(null);
   }, []);
 
   // Load downloads from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('reportDownloads');
+    const stored = localStorage.getItem('yarnflow-saas.tenant.reportDownloads');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -28,7 +29,7 @@ export default function ReportDownloads() {
   const saveDownloads = useCallback((newDownloads) => {
     setGlobalDownloads(newDownloads);
     setDownloads(newDownloads);
-    localStorage.setItem('reportDownloads', JSON.stringify(newDownloads));
+    localStorage.setItem('yarnflow-saas.tenant.reportDownloads', JSON.stringify(newDownloads));
   }, []);
 
   const removeDownload = useCallback((id) => {

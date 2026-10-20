@@ -14,7 +14,7 @@ export const addReportDownload = (reportName, module, dateRange, filename) => {
   };
   
   globalDownloads = [newDownload, ...globalDownloads];
-  localStorage.setItem('reportDownloads', JSON.stringify(globalDownloads));
+  localStorage.setItem('yarnflow-saas.tenant.reportDownloads', JSON.stringify(globalDownloads));
   
   if (globalSetDownloads) {
     globalSetDownloads([...globalDownloads]);
@@ -34,7 +34,7 @@ export const setGlobalDownloads = (downloads) => {
 };
 
 export const getReportDownloads = () => {
-  const stored = localStorage.getItem('reportDownloads');
+  const stored = localStorage.getItem('yarnflow-saas.tenant.reportDownloads');
   if (stored) {
     globalDownloads = JSON.parse(stored);
   }
@@ -43,7 +43,7 @@ export const getReportDownloads = () => {
 
 export const removeReportDownload = (id) => {
   globalDownloads = globalDownloads.filter(d => d.id !== id);
-  localStorage.setItem('reportDownloads', JSON.stringify(globalDownloads));
+  localStorage.setItem('yarnflow-saas.tenant.reportDownloads', JSON.stringify(globalDownloads));
   
   if (globalSetDownloads) {
     globalSetDownloads([...globalDownloads]);
@@ -52,7 +52,7 @@ export const removeReportDownload = (id) => {
 
 export const clearAllDownloads = () => {
   globalDownloads = [];
-  localStorage.removeItem('reportDownloads');
+  localStorage.removeItem('yarnflow-saas.tenant.reportDownloads');
   
   if (globalSetDownloads) {
     globalSetDownloads([]);

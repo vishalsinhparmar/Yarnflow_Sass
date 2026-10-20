@@ -7,6 +7,36 @@
   import WarehouseLocation from '../models/WarehouseLocation.js';
   import { validateAllGRNItems } from '../utils/grnValidation.js';
 
+  // Reduce a (possibly populated) reference field down to its raw ObjectId.
+  // Never write a populated subdocument back to the database - only the reference belongs there.
+  const refId = (value) => (value && typeof value === 'object' && value._id !== undefined ? value._id : value) ?? null;
+
+  // Build a plain, write-safe PO item payload from a purchase order item subdocument.
+  // Only includes the exact fields GRN processing is allowed to touch; references are
+  // reduced to raw ObjectIds so populated documents never get embedded/written back.
+  const toPoItemWritePayload = (item) => ({
+    _id: item._id,
+    product: refId(item.product),
+    productName: item.productName,
+    category: refId(item.category),
+    subProduct: refId(item.subProduct),
+    subProductName: item.subProductName,
+    subProductWeights: item.subProductWeights,
+    productCode: item.productCode,
+    quantity: item.quantity,
+    weight: item.weight,
+    unit: item.unit,
+    receivedQuantity: item.receivedQuantity,
+    receivedWeight: item.receivedWeight,
+    pendingQuantity: item.manuallyCompleted ? 0 : item.pendingQuantity,
+    pendingWeight: item.manuallyCompleted ? 0 : item.pendingWeight,
+    receiptStatus: item.receiptStatus,
+    notes: item.notes,
+    manuallyCompleted: item.manuallyCompleted,
+    completionReason: item.completionReason,
+    completedAt: item.completedAt
+  });
+
   // InventoryLot.warehouse is a display String, but the GRN form submits the
   // WarehouseLocation _id (needed so the dropdown can re-select it when editing).
   // Resolve the id to its friendly name here so PDFs/reports never show a raw ObjectId.
@@ -399,19 +429,19 @@
         pending: i.pendingQuantity
       })));
       
-      // Direct database update to force changes (bypass Mongoose save issues) - within transaction
+      // Direct database update to force changes (bypass Mongoose save issues) - within transaction.
+      // purchaseOrder was fetched with .populate('items.product'), so item.product is a full
+      // Product document in memory - it must NEVER be written back as-is (that would embed a
+      // whole document, including its own tenantId, in place of a plain ObjectId reference).
+      // toPoItemWritePayload() rebuilds each item from explicit fields with references reduced
+      // back to raw ObjectIds, so only real Product refs, never populated docs, reach the DB.
       await PurchaseOrder.updateOne(
         { _id: purchaseOrder._id },
         {
           $set: {
             status: purchaseOrder.status,
             completionPercentage: purchaseOrder.completionPercentage,
-            items: purchaseOrder.items.map(item => ({
-              ...item.toObject(),
-              receiptStatus: item.receiptStatus,
-              pendingQuantity: item.manuallyCompleted ? 0 : item.pendingQuantity,
-              pendingWeight: item.manuallyCompleted ? 0 : item.pendingWeight
-            }))
+            items: purchaseOrder.items.map(toPoItemWritePayload)
           }
         },
         { session }

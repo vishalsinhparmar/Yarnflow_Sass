@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const productSchema = new mongoose.Schema({
   productName: {
@@ -31,5 +32,7 @@ productSchema.virtual('subProducts', {
   localField: '_id',
   foreignField: 'product'
 });
+
+productSchema.plugin(tenantPlugin);
 
 export default mongoose.model('Product', productSchema);

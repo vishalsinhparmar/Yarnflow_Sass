@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 import { generateDocumentNumber } from '../utils/generateDocumentNumber.js';
 
 // Individual item received in GRN
@@ -214,5 +215,7 @@ grnSchema.virtual('isComplete').get(function() {
 // Ensure virtuals are included in JSON output
 grnSchema.set('toJSON', { virtuals: true });
 grnSchema.set('toObject', { virtuals: true });
+
+grnSchema.plugin(tenantPlugin);
 
 export default mongoose.model('GoodsReceiptNote', grnSchema);

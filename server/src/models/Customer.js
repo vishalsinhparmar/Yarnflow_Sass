@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const customerSchema = new mongoose.Schema({
   companyName: {
@@ -42,5 +43,7 @@ customerSchema.pre('save', function(next) {
   }
   next();
 });
+
+customerSchema.plugin(tenantPlugin);
 
 export default mongoose.model('Customer', customerSchema);

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 import { generateDocumentNumber } from '../utils/generateDocumentNumber.js';
 
 const salesChallanSchema = new mongoose.Schema({
@@ -45,6 +46,7 @@ const salesChallanSchema = new mongoose.Schema({
   items: [{
     salesOrderItem: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'SalesOrder.items',
       required: true
     },
     product: {
@@ -324,6 +326,8 @@ salesChallanSchema.virtual('customerDetails').get(function() {
 // Ensure virtuals are included in JSON output
 salesChallanSchema.set('toJSON', { virtuals: true });
 salesChallanSchema.set('toObject', { virtuals: true });
+
+salesChallanSchema.plugin(tenantPlugin);
 
 const SalesChallan = mongoose.model('SalesChallan', salesChallanSchema);
 

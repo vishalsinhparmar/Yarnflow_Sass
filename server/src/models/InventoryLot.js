@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 import Counter from './Counter.js';
 
 // ============ INVENTORY LOT SCHEMA ============
@@ -252,5 +253,7 @@ inventoryLotSchema.statics.findByProduct = function(productId, options = {}) {
 // Ensure virtuals are included in JSON output
 inventoryLotSchema.set('toJSON', { virtuals: true });
 inventoryLotSchema.set('toObject', { virtuals: true });
+
+inventoryLotSchema.plugin(tenantPlugin);
 
 export default mongoose.model('InventoryLot', inventoryLotSchema);

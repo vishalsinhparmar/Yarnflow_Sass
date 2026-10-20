@@ -1,7 +1,7 @@
 import { API_BASE_URL } from './common.js';
 
 async function fetchWithAuth(endpoint, options = {}) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('yarnflow-saas.tenant.token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -63,7 +63,7 @@ export const reportsAPI = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+        Authorization: `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}`
       },
       body: JSON.stringify(payload)
     });
@@ -83,7 +83,7 @@ export const reportsAPI = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+        Authorization: `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}`
       },
       body: JSON.stringify(payload)
     });
@@ -117,7 +117,7 @@ export const reportsAPI = {
     body: JSON.stringify(data)
   }),
   downloadFile: async (id) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('yarnflow-saas.tenant.token');
     const response = await fetch(`${API_BASE_URL}/reports/downloads/${id}/file`, {
       method: 'GET',
       headers: {

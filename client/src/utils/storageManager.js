@@ -101,7 +101,7 @@ export const clearStorage = (type = 'localStorage') => {
   try {
     const storage = type === 'localStorage' ? window.localStorage : window.sessionStorage;
     if (isStorageAvailable(type)) {
-      storage.clear();
+      Object.keys(storage).filter(key => key.startsWith('yarnflow-saas.tenant.')).forEach(key => storage.removeItem(key));
       return true;
     }
   } catch (e) {
@@ -141,7 +141,7 @@ export const tokenManager = {
    * @returns {string|null} - Token or null
    */
   getToken: () => {
-    return getStorageItem('token', 'localStorage');
+    return getStorageItem('yarnflow-saas.tenant.token', 'localStorage');
   },
 
   /**
@@ -153,7 +153,7 @@ export const tokenManager = {
     if (!token) {
       return tokenManager.clearToken();
     }
-    return setStorageItem('token', token, 'localStorage');
+    return setStorageItem('yarnflow-saas.tenant.token', token, 'localStorage');
   },
 
   /**
@@ -161,8 +161,8 @@ export const tokenManager = {
    * @returns {boolean} - True if successful
    */
   clearToken: () => {
-    removeStorageItem('token', 'localStorage');
-    removeStorageItem('user', 'localStorage');
+    removeStorageItem('yarnflow-saas.tenant.token', 'localStorage');
+    removeStorageItem('yarnflow-saas.tenant.user', 'localStorage');
     return true;
   },
 
@@ -223,7 +223,7 @@ export const userManager = {
    * @returns {object|null} - User data or null
    */
   getUser: () => {
-    const userJson = getStorageItem('user', 'localStorage');
+    const userJson = getStorageItem('yarnflow-saas.tenant.user', 'localStorage');
     if (!userJson) return null;
     try {
       return JSON.parse(userJson);
@@ -243,7 +243,7 @@ export const userManager = {
       return userManager.clearUser();
     }
     try {
-      return setStorageItem('user', JSON.stringify(user), 'localStorage');
+      return setStorageItem('yarnflow-saas.tenant.user', JSON.stringify(user), 'localStorage');
     } catch (e) {
       console.warn('Error storing user data:', e.message);
       return false;
@@ -255,7 +255,7 @@ export const userManager = {
    * @returns {boolean} - True if successful
    */
   clearUser: () => {
-    return removeStorageItem('user', 'localStorage');
+    return removeStorageItem('yarnflow-saas.tenant.user', 'localStorage');
   },
 
   /**

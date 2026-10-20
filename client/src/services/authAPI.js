@@ -3,18 +3,20 @@ import { apiRequest } from './common.js';
 
 export const authAPI = {
   // Register new user
-  register: async (email, password) => {
-    return apiRequest('/auth/register', {
+  register: async (company) => {
+    return apiRequest('/saas/companies', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      anonymous: true,
+      body: JSON.stringify(company),
     });
   },
 
   // Login user
-  login: async (email, password) => {
+  login: async (companyCode, email, password) => {
     return apiRequest('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      anonymous: true,
+      body: JSON.stringify({ companyCode, email, password }),
     });
   },
 

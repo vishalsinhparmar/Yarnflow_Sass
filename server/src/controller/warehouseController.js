@@ -1,34 +1,25 @@
 import WarehouseLocation from '../models/WarehouseLocation.js';
+import { requireTenantId } from '../saas/tenantContext.js';
 
 // Cache for warehouse name lookups (invalidated on any mutation)
-let _cache = null;
+const warehouseCaches = new Map();
 export async function resolveWarehouseName(idOrName) {
+  const tenant = String(requireTenantId());
   if (!idOrName) return '';
-  if (!_cache) {
+  let cache = warehouseCaches.get(tenant);
+  if (!cache || cache.expiresAt < Date.now()) {
     const all = await WarehouseLocation.find().lean();
-    _cache = {};
-    all.forEach(w => { _cache[w._id.toString()] = w.name; _cache[w.name] = w.name; });
+    cache = { names: new Map(), expiresAt: Date.now() + 30000 };
+    all.forEach(w => { cache.names.set(String(w._id), w.name); cache.names.set(w.name, w.name); });
+    if (warehouseCaches.size >= 500) warehouseCaches.delete(warehouseCaches.keys().next().value);
+    warehouseCaches.set(tenant, cache);
   }
-  return _cache[idOrName.toString()] || idOrName;
+  return cache.names.get(String(idOrName)) || '';
 }
-export function clearWarehouseCache() { _cache = null; }
-
-const DEFAULT_LOCATIONS = [
-  { name: 'Shop - Chakinayat',   code: 'SHP-CHK', type: 'Shop' },
-  { name: 'Godown - Maryadpatti',code: 'MYD-GDN', type: 'Godown' },
-  { name: 'Others',              code: 'OTH',     type: 'Others' }
-];
-
-async function seedDefaults() {
-  const count = await WarehouseLocation.countDocuments();
-  if (count === 0) {
-    await WarehouseLocation.insertMany(DEFAULT_LOCATIONS);
-  }
-}
+export function clearWarehouseCache() { warehouseCaches.delete(String(requireTenantId())); }
 
 export const getAll = async (req, res) => {
   try {
-    await seedDefaults();
     const { includeInactive } = req.query;
     const filter = includeInactive === 'true' ? {} : { isActive: true };
     const locations = await WarehouseLocation.find(filter).sort({ name: 1 });

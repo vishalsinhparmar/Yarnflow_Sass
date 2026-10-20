@@ -1,12 +1,58 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiRequest } from '../services/common';
 import { getAuthErrorDetails } from '../utils/authError';
+import { saasAPI, TENANT_TOKEN_KEY, SUPER_TOKEN_KEY, canAccessModule, canAccessPath } from '../services/saasAPI';
+import { authAPI } from '../services/authAPI';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.useRealTimers();
   localStorage.clear();
+});
+
+describe('SaaS isolation and access', () => {
+  const company = { status: 'active', modules: ['dashboard', 'inventory', 'users'] };
+  const user = { role: 'User', isActive: true, permissions: ['inventory', 'users'] };
+
+  it('requires both enabled company modules and user permissions', () => {
+    expect(canAccessModule(user, company, 'inventory')).toBe(true);
+    expect(canAccessModule(user, company, 'dashboard')).toBe(false);
+    expect(canAccessModule(user, company, 'users')).toBe(false);
+    expect(canAccessModule({ ...user, role: 'Admin' }, company, 'users')).toBe(true);
+    expect(canAccessModule({ ...user, role: 'Admin' }, company, 'reports')).toBe(false);
+    expect(canAccessModule(user, { ...company, status: 'inactive' }, 'inventory')).toBe(false);
+    expect(canAccessModule({ ...user, isActive: false }, company, 'inventory')).toBe(false);
+    expect(canAccessPath(user, company, '/app/inventory')).toBe(true);
+    expect(canAccessPath(user, company, '/inventory')).toBe(false);
+    expect(canAccessPath(user, company, '/app/unknown')).toBe(false);
+  });
+
+  it('never sends original or SuperAdmin tokens to tenant APIs', async () => {
+    vi.spyOn(localStorage, 'getItem').mockImplementation(key => ({ token: 'original-token', [TENANT_TOKEN_KEY]: 'tenant-token', [SUPER_TOKEN_KEY]: 'super-token' })[key]);
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+    vi.stubGlobal('fetch', fetchMock);
+    await apiRequest('/inventory');
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer tenant-token');
+    expect(fetchMock.mock.calls[0][0]).not.toContain('3050');
+    expect(fetchMock.mock.calls[0][0]).not.toContain('railway');
+    await saasAPI.companies();
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe('Bearer super-token');
+    await saasAPI.register({ companyName: 'Test Textiles' });
+    expect(fetchMock.mock.calls[2][1].headers.Authorization).toBeUndefined();
+    await authAPI.login('YF001', 'admin', 'secret');
+    expect(fetchMock.mock.calls[3][1].headers.Authorization).toBeUndefined();
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toEqual({ companyCode: 'YF001', email: 'admin', password: 'secret' });
+  });
+
+  it('does not fall back to the original token when SaaS tokens are missing', async () => {
+    vi.spyOn(localStorage, 'getItem').mockImplementation(key => key === 'token' ? 'original-token' : null);
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+    vi.stubGlobal('fetch', fetchMock);
+    await apiRequest('/inventory');
+    await saasAPI.companies();
+    expect(fetchMock.mock.calls.every(([, config]) => !config.headers.Authorization)).toBe(true);
+  });
 });
 
 describe('authentication error handling', () => {

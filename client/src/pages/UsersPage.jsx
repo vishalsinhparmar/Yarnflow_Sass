@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Users, Loader2, X, Check, KeyRound, Smartphone } from 'lucide-react';
 import userManagementAPI from '../services/userManagementAPI';
+import { useAuth } from '../context/AuthContext';
+import { MODULES } from '../services/saasAPI';
 
-const emptyForm = { name: '', username: '', email: '', password: '', role: 'User', mobileAccess: false };
+const emptyForm = { name: '', username: '', email: '', password: '', role: 'User', mobileAccess: false, permissions: [] };
 
 export default function UsersPage() {
+  const { company } = useAuth();
+  const permissionModules = MODULES.filter(module => module.key !== 'users' && company?.modules?.includes(module.key));
   const [users, setUsers]         = useState([]);
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
@@ -30,19 +34,19 @@ export default function UsersPage() {
   useEffect(() => { load(); }, []);
 
   const openCreate   = () => { setForm(emptyForm); setEditing(null); setModal('create'); setError(''); };
-  const openEdit     = (u) => { setForm({ name: u.name || '', username: u.username || '', email: u.email, password: '', role: u.role, mobileAccess: u.mobileAccess || false }); setEditing(u); setModal('edit'); setError(''); };
+  const openEdit     = (u) => { setForm({ name: u.name || '', username: u.username || '', email: u.email, password: '', role: u.role, mobileAccess: u.mobileAccess || false, permissions: (u.permissions || []).filter(key => company?.modules?.includes(key)) }); setEditing(u); setModal('edit'); setError(''); };
   const openPassword = (u) => { setPwForm({ password: '', confirm: '' }); setEditing(u); setModal('password'); setError(''); };
   const closeModal   = () => { setModal(null); setEditing(null); setError(''); };
 
   const handleSave = async () => {
     if (!form.email.trim()) { setError('Email is required'); return; }
-    if (modal === 'create' && !form.password.trim()) { setError('Password is required'); return; }
+    if (modal === 'create' && form.password.length < 8) { setError('Password must be at least 8 characters'); return; }
     setSaving(true); setError('');
     try {
       if (modal === 'create') {
         await userManagementAPI.create(form);
       } else {
-        const payload = { name: form.name, username: form.username, email: form.email, role: form.role, mobileAccess: form.mobileAccess };
+        const payload = { name: form.name, username: form.username, email: form.email, role: form.role, mobileAccess: form.mobileAccess, permissions: form.permissions };
         await userManagementAPI.update(editing._id, payload);
       }
       closeModal();
@@ -55,7 +59,7 @@ export default function UsersPage() {
   };
 
   const handleResetPassword = async () => {
-    if (pwForm.password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (pwForm.password.length < 8) { setError('Password must be at least 8 characters'); return; }
     if (pwForm.password !== pwForm.confirm) { setError('Passwords do not match'); return; }
     setSaving(true); setError('');
     try {
@@ -100,7 +104,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="w-6 h-6 text-orange-500" /> User Management
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Create and manage users, roles, and mobile access</p>
+          <p className="text-sm text-gray-500 mt-1">Create and manage users, roles, module permissions, and mobile access</p>
         </div>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Plus className="w-4 h-4" /> Add User
@@ -171,7 +175,7 @@ export default function UsersPage() {
       {/* Create / Edit Modal */}
       {(modal === 'create' || modal === 'edit') && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-900">{modal === 'create' ? 'Add User' : 'Edit User'}</h2>
               <button onClick={closeModal}><X className="w-5 h-5 text-gray-400 hover:text-gray-700" /></button>
@@ -199,7 +203,7 @@ export default function UsersPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Password *</label>
                   <input type="password" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
-                    value={form.password} onChange={e => setForm(p => ({...p, password: e.target.value}))} placeholder="Min. 6 characters" />
+                    value={form.password} onChange={e => setForm(p => ({...p, password: e.target.value}))} placeholder="Min. 8 characters" />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
@@ -218,6 +222,17 @@ export default function UsersPage() {
                   </label>
                 </div>
               </div>
+              <fieldset className="border-t pt-4">
+                <legend className="text-sm font-semibold text-gray-800">Module permissions</legend>
+                <p className="mb-3 text-xs text-gray-500">{form.role === 'Admin' ? 'Admins can access all company-enabled modules and manage users.' : 'Choose the company-enabled modules this user can access.'}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {permissionModules.map(module => <label key={module.key} className="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" className="h-4 w-4 accent-orange-500" disabled={form.role === 'Admin'} checked={form.role === 'Admin' || form.permissions.includes(module.key)} onChange={event => setForm(previous => ({ ...previous, permissions: event.target.checked ? [...previous.permissions, module.key] : previous.permissions.filter(key => key !== module.key) }))} />
+                    {module.label}
+                  </label>)}
+                </div>
+                {!permissionModules.length && <p className="text-sm text-gray-500">No modules enabled for this company.</p>}
+              </fieldset>
             </div>
             <div className="flex justify-end gap-3 px-6 pb-5">
               <button onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
@@ -244,7 +259,7 @@ export default function UsersPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">New Password</label>
                 <input type="password" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
-                  value={pwForm.password} onChange={e => setPwForm(p => ({...p, password: e.target.value}))} placeholder="Min. 6 characters" />
+                  value={pwForm.password} onChange={e => setPwForm(p => ({...p, password: e.target.value}))} placeholder="Min. 8 characters" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Confirm Password</label>

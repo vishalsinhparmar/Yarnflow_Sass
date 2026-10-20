@@ -7,9 +7,10 @@ import { getAuthErrorDetails } from '../utils/authError';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, homePath } = useAuth();
   
   const [formData, setFormData] = useState({
+    companyCode: '',
     email: '',
     password: '',
     rememberMe: false,
@@ -21,7 +22,7 @@ const Login = () => {
 
   // Load remembered email on mount (password is never persisted)
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    const rememberedEmail = localStorage.getItem('yarnflow-saas.rememberedEmail');
     if (rememberedEmail) {
       setFormData((prev) => ({
         ...prev,
@@ -34,9 +35,9 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate(homePath, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, homePath]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -53,8 +54,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password, formData.rememberMe);
-      navigate('/dashboard');
+      await login(formData.companyCode.trim(), formData.email.trim(), formData.password, formData.rememberMe);
     } catch (error) {
       setSubmitError(getAuthErrorDetails(error, 'login'));
     } finally {
@@ -98,10 +98,14 @@ const Login = () => {
             isRetrying={isLoading}
           />
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="companyCode" className="block text-sm font-medium text-gray-200 mb-2">Company code or name</label>
+              <input id="companyCode" name="companyCode" autoComplete="organization" required value={formData.companyCode} onChange={handleChange} placeholder="Enter your approved company code or name" className="block w-full px-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500" />
+            </div>
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
-                Email Address
+                Email or username
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -110,8 +114,8 @@ const Login = () => {
                 <input
                   id="email"
                   name="email"
-                  type="email"
-                  autoComplete="email"
+                  type="text"
+                  autoComplete="username"
                   required
                   value={formData.email}
                   onChange={handleChange}
@@ -146,6 +150,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
@@ -168,7 +173,7 @@ const Login = () => {
                 className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer bg-white/10"
               />
               <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-300 cursor-pointer">
-                Remember my credentials
+                Remember my email / username
               </label>
             </div>
 
@@ -192,6 +197,7 @@ const Login = () => {
             </button>
           </form>
 
+          <div className="text-center text-sm text-gray-300"><Link to="/register" className="font-semibold text-orange-400 hover:text-orange-300">Register your company</Link><span className="mx-3">·</span><Link to="/" className="hover:text-white">Back to home</Link></div>
           {/* Register Link */}
           {/* <div className="text-center pt-4 border-t border-white/20">
             <p className="text-sm text-gray-300">
@@ -209,7 +215,7 @@ const Login = () => {
         {/* Footer */}
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            © 2024 YarnFlow. All rights reserved.
+            © {new Date().getFullYear()} YarnFlow. All rights reserved.
           </p>
         </div>
       </div>

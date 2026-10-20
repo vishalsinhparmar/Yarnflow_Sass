@@ -16,7 +16,7 @@ export const importMasterData = async (type, file) => {
   
   // Use fetch directly for file upload (FormData requires different handling)
   const { API_BASE_URL } = await import('./common.js');
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('yarnflow-saas.tenant.token');
   
   const response = await fetch(`${API_BASE_URL}/master-data/import/${type}`, {
     method: 'POST',

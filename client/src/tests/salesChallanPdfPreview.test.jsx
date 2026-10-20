@@ -23,7 +23,7 @@ describe('Sales challan PDF preview', () => {
       'top-16',
       'lg:left-[var(--sidebar-width)]'
     );
-    expect(screen.getByText('Individual challan document - PKRK/SC/008')).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Individual challan document • PKRK/SC/008')).toBeInTheDocument();
     expect(screen.getByTitle('Delivery challan preview')).toHaveAttribute(
       'src',
       'blob:challan-preview'

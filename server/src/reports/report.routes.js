@@ -18,7 +18,10 @@ import {
   clearDownloads
 } from './report.controller.js';
 
+import { reportAccess } from './report.access.js';
+
 const router = express.Router();
+router.use(reportAccess);
 
 // Saved report CRUD — must come before dynamic :reportKey routes
 router.get('/saved', savedReportsList);

@@ -1,5 +1,6 @@
 import { createElement, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
   BarChart3,
   Boxes,
@@ -24,30 +25,32 @@ import {
 } from 'lucide-react';
 
 const primaryItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Purchase Order (PO)', path: '/purchase-order', icon: ShoppingCart },
-  { name: 'Goods Receipt Note (GRN)', path: '/goods-receipt', icon: ClipboardCheck },
-  { name: 'Inventory Lots', path: '/inventory', icon: Package },
-  { name: 'Sales Order (SO)', path: '/sales-order', icon: FileText },
-  { name: 'Sales Challan', path: '/sales-challan', icon: Truck }
+  { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
+  { name: 'Purchase Order (PO)', path: '/app/purchase-order', icon: ShoppingCart },
+  { name: 'Goods Receipt Note (GRN)', path: '/app/goods-receipt', icon: ClipboardCheck },
+  { name: 'Inventory Lots', path: '/app/inventory', icon: Package },
+  { name: 'Sales Order (SO)', path: '/app/sales-order', icon: FileText },
+  { name: 'Sales Challan', path: '/app/sales-challan', icon: Truck }
 ];
 
 const masterDataItems = [
-  { name: 'Dashboard', path: '/master-data', icon: LayoutDashboard },
-  { name: 'Customers', path: '/master-data/customers', icon: Users },
-  { name: 'Suppliers', path: '/master-data/suppliers', icon: Factory },
-  { name: 'Products', path: '/master-data/products', icon: Boxes },
-  { name: 'Categories', path: '/master-data/categories', icon: FolderOpen },
-  { name: 'Sub Products', path: '/master-data/sub-products', icon: Layers }
+  { name: 'Dashboard', path: '/app/master-data', icon: LayoutDashboard },
+  { name: 'Customers', path: '/app/master-data/customers', icon: Users },
+  { name: 'Suppliers', path: '/app/master-data/suppliers', icon: Factory },
+  { name: 'Products', path: '/app/master-data/products', icon: Boxes },
+  { name: 'Categories', path: '/app/master-data/categories', icon: FolderOpen },
+  { name: 'Sub Products', path: '/app/master-data/sub-products', icon: Layers }
 ];
 
 const configurationItems = [
-  { name: 'Warehouses', path: '/configuration/warehouses', icon: MapPin },
-  { name: 'Users', path: '/configuration/users', icon: Users }
+  { name: 'Warehouses', path: '/app/configuration/warehouses', icon: MapPin },
+  { name: 'Users', path: '/app/configuration/users', icon: Users }
 ];
 
-const NavLink = ({ item, active, collapsed, onNavigate, nested = false }) => (
-  <Link
+const NavLink = ({ item, active, collapsed, onNavigate, nested = false }) => {
+  const { canVisit } = useAuth();
+  if (!canVisit(item.path)) return null;
+  return <Link
     to={item.path}
     onClick={onNavigate}
     title={collapsed ? item.name : undefined}
@@ -65,8 +68,8 @@ const NavLink = ({ item, active, collapsed, onNavigate, nested = false }) => (
     })}
     {!collapsed && <span className="min-w-0 truncate text-sm font-medium">{item.name}</span>}
     {!collapsed && active && <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-white" />}
-  </Link>
-);
+  </Link>;
+};
 
 const SideBarApp = ({
   collapsed = false,
@@ -75,8 +78,12 @@ const SideBarApp = ({
   onMobileClose = () => {}
 }) => {
   const location = useLocation();
-  const isMasterDataActive = location.pathname.startsWith('/master-data');
-  const isConfigActive = location.pathname.startsWith('/configuration');
+  const { canVisit } = useAuth();
+  const visiblePrimary = primaryItems.filter(item => canVisit(item.path));
+  const visibleMaster = masterDataItems.filter(item => canVisit(item.path));
+  const visibleConfig = configurationItems.filter(item => canVisit(item.path));
+  const isMasterDataActive = location.pathname.startsWith('/app/master-data');
+  const isConfigActive = location.pathname.startsWith('/app/configuration');
   const [masterDataOpen, setMasterDataOpen] = useState(isMasterDataActive);
   const [configOpen, setConfigOpen] = useState(isConfigActive);
 
@@ -139,7 +146,7 @@ const SideBarApp = ({
 
         <nav className={`erp-scrollbar-hidden min-h-0 flex-1 overflow-y-auto overflow-x-hidden py-3 ${collapsed ? 'px-2' : 'px-3'}`}>
           <ul className="space-y-1">
-            {primaryItems.map((item) => (
+            {visiblePrimary.map((item) => (
               <li key={item.path}>
                 <NavLink
                   item={item}
@@ -150,7 +157,7 @@ const SideBarApp = ({
               </li>
             ))}
 
-            <li className="pt-4">
+            {visibleMaster.length > 0 && <li className="pt-4">
               {!collapsed && (
                 <div className="mb-2 flex items-center gap-2 px-2">
                   <div className="h-px flex-1 bg-gray-800" />
@@ -181,7 +188,7 @@ const SideBarApp = ({
               </button>
               {!collapsed && masterDataOpen && (
                 <ul className="mt-1 space-y-1 border-l border-gray-700 pl-2">
-                  {masterDataItems.map((item) => (
+                  {visibleMaster.map((item) => (
                     <li key={item.path}>
                       <NavLink
                         item={item}
@@ -194,18 +201,18 @@ const SideBarApp = ({
                   ))}
                 </ul>
               )}
-            </li>
+            </li>}
 
             <li className="pt-1">
               <NavLink
-                item={{ name: 'Company Profile', path: '/company-profile', icon: Building2 }}
-                active={location.pathname === '/company-profile'}
+                item={{ name: 'Company Profile', path: '/app/company-profile', icon: Building2 }}
+                active={location.pathname === '/app/company-profile'}
                 collapsed={collapsed}
                 onNavigate={onMobileClose}
               />
             </li>
 
-            <li className="pt-1">
+            {visibleConfig.length > 0 && <li className="pt-1">
               <button
                 type="button"
                 onClick={() => handleSectionToggle('config')}
@@ -229,7 +236,7 @@ const SideBarApp = ({
               </button>
               {!collapsed && configOpen && (
                 <ul className="mt-1 space-y-1 border-l border-gray-700 pl-2">
-                  {configurationItems.map((item) => (
+                  {visibleConfig.map((item) => (
                     <li key={item.path}>
                       <NavLink
                         item={item}
@@ -242,12 +249,12 @@ const SideBarApp = ({
                   ))}
                 </ul>
               )}
-            </li>
+            </li>}
 
             <li className="pt-1">
               <NavLink
-                item={{ name: 'Reports', path: '/reports', icon: BarChart3 }}
-                active={location.pathname === '/reports'}
+                item={{ name: 'Reports', path: '/app/reports', icon: BarChart3 }}
+                active={location.pathname === '/app/reports'}
                 collapsed={collapsed}
                 onNavigate={onMobileClose}
               />

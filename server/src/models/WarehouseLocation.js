@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const warehouseLocationSchema = new mongoose.Schema({
   name:    { type: String, required: true, trim: true },
@@ -9,5 +10,7 @@ const warehouseLocationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 warehouseLocationSchema.index({ code: 1 }, { unique: true });
+
+warehouseLocationSchema.plugin(tenantPlugin);
 
 export default mongoose.model('WarehouseLocation', warehouseLocationSchema);

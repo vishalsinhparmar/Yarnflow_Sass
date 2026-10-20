@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const unitSchema = new mongoose.Schema({
   name: {
@@ -12,6 +13,8 @@ const unitSchema = new mongoose.Schema({
 });
 
 // name index is created by unique:true above
+
+unitSchema.plugin(tenantPlugin);
 
 const Unit = mongoose.model('Unit', unitSchema);
 

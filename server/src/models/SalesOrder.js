@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 import { generateDocumentNumber } from '../utils/generateDocumentNumber.js';
 
 const salesOrderSchema = new mongoose.Schema({
@@ -353,6 +354,8 @@ salesOrderSchema.statics.getOrderStats = async function() {
   };
 };
 
+
+salesOrderSchema.plugin(tenantPlugin);
 
 const SalesOrder = mongoose.model('SalesOrder', salesOrderSchema);
 

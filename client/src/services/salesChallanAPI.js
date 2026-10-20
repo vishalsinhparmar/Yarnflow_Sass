@@ -1,5 +1,5 @@
 // Sales Challan API Service
-import { apiRequest } from './common.js';
+import { apiRequest, API_BASE_URL } from './common.js';
 
 // Generic API request handler moved to ./common.js
 
@@ -50,14 +50,13 @@ export const salesChallanAPI = {
 
   // Generate PDF for single challan
   generatePDF: async (id) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3050/api';
     const url = `${API_BASE_URL}/sales-challans/${id}/pdf/download`;
     
     try {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}`
         }
       });
 
@@ -98,11 +97,10 @@ export const salesChallanAPI = {
 
   // Preview PDF — returns a blob URL for in-app modal embedding
   previewPDF: async (id) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3050/api';
     const url = `${API_BASE_URL}/sales-challans/${id}/pdf/preview`;
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}` }
     });
     if (!response.ok) throw new Error('Failed to preview PDF');
     const blob = await response.blob();
@@ -111,14 +109,13 @@ export const salesChallanAPI = {
 
   // Generate Consolidated PDF for SO (download)
   generateConsolidatedPDF: async (soId) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3050/api';
     const url = `${API_BASE_URL}/sales-challans/so/${soId}/pdf/download`;
     
     try {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}`
         }
       });
 
@@ -159,11 +156,10 @@ export const salesChallanAPI = {
 
   // Preview Consolidated PDF for SO — returns a blob URL for in-app modal embedding
   previewConsolidatedPDF: async (soId) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3050/api';
     const url = `${API_BASE_URL}/sales-challans/so/${soId}/pdf/preview`;
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('yarnflow-saas.tenant.token') || ''}` }
     });
     if (!response.ok) throw new Error('Failed to preview consolidated PDF');
     const blob = await response.blob();

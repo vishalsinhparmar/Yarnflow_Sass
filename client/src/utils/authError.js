@@ -36,7 +36,7 @@ export const getAuthErrorDetails = (error, action = 'login') => {
     return {
       type: 'credentials',
       title: 'Sign-in failed',
-      message: 'The email or password you entered is incorrect.',
+      message: error?.message || 'The company code, email / username or password is incorrect.',
       helpText: 'Check your credentials and try again.',
       canRetry: false,
     };

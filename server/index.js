@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { getSaasConfig } from './src/saas/config.js';
+import saasRoutes from './src/saas/routes.js';
+import authMiddleware from './src/middleware/authMiddleware.js';
+import { masterDataAccess, requireModules } from './src/saas/modules.js';
+import { rejectTenantInjection } from './src/saas/security.js';
 import connectDB from './db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import dashboardRoutes from './src/routes/dashboardRoutes.js';
@@ -17,30 +21,16 @@ import reportsRoutes from './src/routes/reportsRoutes.js';
 import logger from './src/utils/logger.js';
 
 // Load environment variables based on NODE_ENV
-const NODE_ENV = process.env.NODE_ENV || 'development';
-
 // Load environment-specific .env file with fallback
-try {
-    if (NODE_ENV === 'production') {
-        dotenv.config({ path: '.env.production' });
-        console.log(`🌍 Loading environment: production`);
-    } else {
-        // Default to development
-        dotenv.config({ path: '.env.developement' });
-        console.log(`🌍 Loading environment: development`);
-    }
-} catch (error) {
-    console.log('⚠️ Environment file not found, using default configuration');
-    dotenv.config(); // Fallback to default .env
-}
+// Default to development
+// Fallback to default .env
+const config = getSaasConfig();
 
 const app = express();
 
 // CORS Configuration
 const corsOptions = {
-    origin: process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
-        : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081'],
+    origin: config.origin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
@@ -72,8 +62,11 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
+app.use(rejectTenantInjection);
+app.disable('x-powered-by');
+app.set('trust proxy', false);
+
 // Connect to database
-connectDB();
 
 // Health check route
 app.get('/', (req, res) => {
@@ -86,17 +79,18 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);  // ✅ Fixed: Added /api prefix for consistency
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/master-data', masterDataRoutes);
-app.use('/api/purchase-orders', purchaseOrderRoutes);
-app.use('/api/grn', grnRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/sales-orders', salesOrderRoutes);
-app.use('/api/sales-challans', salesChallanRoutes);
-app.use('/api/company-profile', companyProfileRoutes);
-app.use('/api/warehouses', warehouseRoutes);
+app.use('/api/saas', saasRoutes);
+app.use('/api/dashboard', authMiddleware, requireModules('dashboard'), dashboardRoutes);
+app.use('/api/master-data', authMiddleware, masterDataAccess, masterDataRoutes);
+app.use('/api/purchase-orders', authMiddleware, requireModules('purchase-orders'), purchaseOrderRoutes);
+app.use('/api/grn', authMiddleware, requireModules('grn'), grnRoutes);
+app.use('/api/inventory', authMiddleware, requireModules('inventory'), inventoryRoutes);
+app.use('/api/sales-orders', authMiddleware, requireModules('sales-orders'), salesOrderRoutes);
+app.use('/api/sales-challans', authMiddleware, requireModules('sales-challans'), salesChallanRoutes);
+app.use('/api/company-profile', authMiddleware, requireModules('company-profile'), companyProfileRoutes);
+app.use('/api/warehouses', authMiddleware, requireModules('warehouses'), warehouseRoutes);
 app.use('/api/users', userManagementRoutes);
-app.use('/api/reports', reportsRoutes);
+app.use('/api/reports', authMiddleware, requireModules('reports'), reportsRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -108,25 +102,39 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((error, req, res, next) => {
-    logger.error('Global error:', error);
-    res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-    });
+    if (res.headersSent) return next(error);
+    const safeStatuses = [400, 401, 403, 404, 409, 429];
+    let status = safeStatuses.includes(error.status) ? error.status : 500;
+    let message = status === 500 ? 'Internal server error' : error.message;
+    if (error.code === 11000) { status = 409; message = 'A record with these details already exists'; }
+    if (['ValidationError', 'CastError', 'StrictModeError'].includes(error.name)) { status = 400; message = 'Invalid request data'; }
+    if (['MongoServerSelectionError', 'MongooseServerSelectionError', 'MongoNetworkError'].includes(error.name)) { status = 503; message = 'Service temporarily unavailable'; }
+    logger.error('Global error:', { name: error.name, status });
+    res.status(status).json({ success: false, message });
 });
 
-const PORT = process.env.PORT || 3020;
+const PORT = config.port;
+// Binding to 127.0.0.1 only accepts connections from this machine, which
+// blocks a physical phone/tablet on the same Wi-Fi/hotspot (e.g. the Expo Go
+// app hitting the dev server via the laptop's LAN IP) even though the port
+// is otherwise reachable. 0.0.0.0 accepts connections on every local
+// interface. Fine for local development (getSaasConfig() already refuses to
+// run this server outside development/test mode); a real production
+// deployment sits behind its own host/process manager, not this file.
+const HOST = '0.0.0.0';
 
 // Export app for testing
 export { app };
+export async function startServer() {
+  await connectDB();
+  return app.listen(PORT, HOST, () => logger.info(`YarnFlow SaaS development server listening on ${HOST}:${PORT} (reachable at http://<this-machine-LAN-IP>:${PORT} from other devices on the same network)`));
+}
 
 // Start server only if not in test mode
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, '0.0.0.0', () => {
-    logger.info(`🚀 YarnFlow Server is running on port ${PORT}`);
-    console.log(`🚀 Server is running on 0.0.0.0:${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+if (config.mode !== 'test') {
+  startServer().catch(() => {
+    logger.error('SaaS startup failed; server was not started');
+    process.exitCode = 1;
   });
 }
 

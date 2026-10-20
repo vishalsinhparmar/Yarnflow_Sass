@@ -2,17 +2,16 @@
 // Automatically detects environment and uses correct API URL
 
 // Get environment variable from Vite (if set)
-const VITE_API_URL = import.meta.env.VITE_API_BASE_URL;
+const VITE_API_URL = import.meta.env.VITE_SAAS_API_URL;
 
 // Detect if we're in development or production
 const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 // Set API URLs
-const DEVELOPMENT_API = 'http://localhost:3050/api';
-const PRODUCTION_API = 'https://yarnflow-production.up.railway.app/api';
+const DEVELOPMENT_API = 'http://localhost:3051/api';
 
 // Automatic selection: Use VITE env var if set, otherwise auto-detect
-export const API_BASE_URL = VITE_API_URL || (isDevelopment ? DEVELOPMENT_API : PRODUCTION_API);
+export const API_BASE_URL = (VITE_API_URL || DEVELOPMENT_API).replace(/\/$/, '');
 
 // Log which API is being used (helpful for debugging)
 console.log(`🌐 API Mode: ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'}`);
@@ -30,7 +29,7 @@ export class ApiError extends Error {
 
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = localStorage.getItem('token');
+  const token = options.anonymous ? null : localStorage.getItem('yarnflow-saas.tenant.token');
 
   const defaultHeaders = {
     'Content-Type': 'application/json',
@@ -71,14 +70,16 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   const data = await response.json().catch(() => ({}));
 
-  if (!response.ok) {
-    const isPublicAuthRequest = endpoint === '/auth/login' || endpoint === '/auth/register';
+  if (!response.ok || data.success === false) {
+    const isPublicAuthRequest = options.anonymous === true || endpoint === '/auth/login' || endpoint === '/saas/companies';
 
-    if (response.status === 401 && !isPublicAuthRequest) {
+    if ((response.status === 401 || (response.status === 403 && ['COMPANY_INACTIVE', 'USER_INACTIVE', 'COMPANY_DEACTIVATED', 'ACCOUNT_DISABLED'].includes(data.code))) && !isPublicAuthRequest) {
       // Token missing or expired — clear session and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      if (localStorage.getItem('yarnflow-saas.tenant.token') === token) {
+        localStorage.removeItem('yarnflow-saas.tenant.token');
+        localStorage.removeItem('yarnflow-saas.tenant.user');
+        window.dispatchEvent(new Event('saas-session-expired'));
+      }
       throw new ApiError('Session expired. Please log in again.', {
         status: 401,
         code: 'SESSION_EXPIRED',

@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LogOut, User, ChevronDown, Shield, Mail, Menu } from 'lucide-react';
 
 const NavBarApp = ({ onMobileMenuToggle = () => {} }) => {
-  const { user, logout } = useAuth();
+  const { user, company, logout } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -47,10 +47,10 @@ const NavBarApp = ({ onMobileMenuToggle = () => {} }) => {
           </div>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold text-white sm:text-2xl">YarnFlow</h1>
-            <p className="hidden text-xs text-gray-400 sm:block">Management System</p>
+            <p className="hidden max-w-64 truncate text-xs text-gray-400 sm:block">{company?.companyName} · {company?.companyCode}</p>
           </div>
           <div className="hidden rounded-md bg-orange-600 px-2 py-1 sm:block">
-            <span className="text-xs font-semibold text-white">ADMIN</span>
+            <span className="text-xs font-semibold text-white">{user?.role}</span>
           </div>
         </div>
 

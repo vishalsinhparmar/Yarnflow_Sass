@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const reportDownloadSchema = new mongoose.Schema({
   reportName: {
@@ -35,5 +36,7 @@ const reportDownloadSchema = new mongoose.Schema({
 
 // Index for faster queries by user
 reportDownloadSchema.index({ createdBy: 1, generatedAt: -1 });
+
+reportDownloadSchema.plugin(tenantPlugin);
 
 export default mongoose.model('ReportDownload', reportDownloadSchema);

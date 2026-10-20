@@ -1,20 +1,24 @@
 import mongoose from "mongoose";
 import logger from "./src/utils/logger.js";
+import { getSaasConfig } from './src/saas/config.js';
 
 const connectDB = async () => {
     try {
         // Use environment variable for database URI, fallback to local MongoDB
-        const dbURI = process.env.MONGODB_URI || process.env.DATABASE_URL || "mongodb://localhost:27017/";
-        
-        await mongoose.connect(dbURI);
+        const config = getSaasConfig();
+        mongoose.set('bufferCommands', false);
+        await mongoose.connect(config.uri, { dbName: config.dbName, serverSelectionTimeoutMS: 15000, socketTimeoutMS: 45000, autoIndex: true });
+        await Promise.all(Object.values(mongoose.models).map(model => model.init()));
         
         logger.info(`✅ Database connected successfully to: ${mongoose.connection.host}`);
         console.log(`✅ Database connected successfully to: ${mongoose.connection.host}`);
         
     } catch (err) {
         logger.error('❌ Database connection error:', err.message);
+        console.error('❌ Full error:', err);
         // Exit process with failure
-        process.exit(1);
+        await mongoose.disconnect();
+        throw new Error('Isolated SaaS database connection failed');
     }
 };
 

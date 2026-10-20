@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const savedReportSchema = new mongoose.Schema({
   name: {
@@ -28,5 +29,7 @@ const savedReportSchema = new mongoose.Schema({
 
 savedReportSchema.index({ createdBy: 1, reportKey: 1 });
 savedReportSchema.index({ reportKey: 1, isShared: 1 });
+
+savedReportSchema.plugin(tenantPlugin);
 
 export default mongoose.model('SavedReport', savedReportSchema);

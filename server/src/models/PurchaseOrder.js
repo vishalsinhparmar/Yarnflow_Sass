@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 import { generateDocumentNumber } from '../utils/generateDocumentNumber.js';
 
 const purchaseOrderItemSchema = new mongoose.Schema({
@@ -329,5 +330,7 @@ purchaseOrderSchema.virtual('completionPercent').get(function() {
 // Ensure virtuals are included in JSON output
 purchaseOrderSchema.set('toJSON', { virtuals: true });
 purchaseOrderSchema.set('toObject', { virtuals: true });
+
+purchaseOrderSchema.plugin(tenantPlugin);
 
 export default mongoose.model('PurchaseOrder', purchaseOrderSchema);

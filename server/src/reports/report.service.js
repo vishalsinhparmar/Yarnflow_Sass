@@ -127,15 +127,24 @@ export const getSavedReportById = async (id, user) => {
 };
 
 export const createSavedReport = async (reportKey, body, user) => {
-  const definition = validateReportKey(reportKey);
+  const definition = validateReportKey(reportKey || body.reportKey);
   const data = validateSavedReport(definition, body, user);
   const report = new SavedReport(data);
   await report.save();
   return report.toObject();
 };
 
+const requireReportOwner = (report, user) => {
+  if (report.createdBy !== user.email && user.role !== 'Admin') {
+    const error = new Error('Only the report owner or company administrator may modify this report');
+    error.status = 403;
+    throw error;
+  }
+};
+
 export const updateSavedReport = async (id, body, user) => {
   const existing = await getSavedReportById(id, user);
+  requireReportOwner(existing, user);
   const definition = validateReportKey(existing.reportKey);
   const data = validateSavedReport(definition, body, user);
   const updated = await SavedReport.findByIdAndUpdate(
@@ -151,7 +160,8 @@ export const updateSavedReport = async (id, body, user) => {
 };
 
 export const deleteSavedReport = async (id, user) => {
-  await getSavedReportById(id, user);
+  const existing = await getSavedReportById(id, user);
+  requireReportOwner(existing, user);
   await SavedReport.findByIdAndDelete(id);
   return { success: true };
 };

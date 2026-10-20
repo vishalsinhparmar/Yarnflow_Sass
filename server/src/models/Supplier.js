@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const supplierSchema = new mongoose.Schema({
   companyName: {
@@ -45,5 +46,7 @@ supplierSchema.pre('save', function(next) {
   }
   next();
 });
+
+supplierSchema.plugin(tenantPlugin);
 
 export default mongoose.model('Supplier', supplierSchema);

@@ -77,7 +77,7 @@ const MasterData = () => {
             <p className="text-gray-600">Manage customers, suppliers, products, and categories</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/master-data/customers')} className="text-sm text-gray-500 hover:text-gray-700 font-medium">Manage →</button>
+            <button onClick={() => navigate('/app/master-data/customers')} className="text-sm text-gray-500 hover:text-gray-700 font-medium">Manage →</button>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ const MasterData = () => {
           </p>
           <div className="space-y-2">
             <button 
-              onClick={() => navigate('/master-data/customers')}
+              onClick={() => navigate('/app/master-data/customers')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Manage Customers
@@ -130,7 +130,7 @@ const MasterData = () => {
           </p>
           <div className="space-y-2">
             <button 
-              onClick={() => navigate('/master-data/suppliers')}
+              onClick={() => navigate('/app/master-data/suppliers')}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Manage Suppliers
@@ -161,7 +161,7 @@ const MasterData = () => {
           </p>
           <div className="space-y-2">
             <button 
-              onClick={() => navigate('/master-data/products')}
+              onClick={() => navigate('/app/master-data/products')}
               className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Manage Products
@@ -190,7 +190,7 @@ const MasterData = () => {
           <p className="text-sm text-gray-600 mb-3">Product categories and classifications</p>
           <div className="space-y-2">
             <button 
-              onClick={() => navigate('/master-data/categories')}
+              onClick={() => navigate('/app/master-data/categories')}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Manage Categories
@@ -213,7 +213,7 @@ const MasterData = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Recent Customers</h2>
             <button 
-              onClick={() => navigate('/master-data/customers')}
+              onClick={() => navigate('/app/master-data/customers')}
               className="text-blue-600 hover:text-blue-900 text-sm font-medium"
             >
               View All
@@ -249,7 +249,7 @@ const MasterData = () => {
               <div className="text-center py-4">
                 <p className="text-gray-500">No customers found</p>
                 <button
-                  onClick={() => navigate('/master-data/customers')}
+                  onClick={() => navigate('/app/master-data/customers')}
                   className="text-blue-600 hover:text-blue-900 text-sm mt-2"
                 >
                   Add First Customer
@@ -263,7 +263,7 @@ const MasterData = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Recent Suppliers</h2>
             <button 
-              onClick={() => navigate('/master-data/suppliers')}
+              onClick={() => navigate('/app/master-data/suppliers')}
               className="text-purple-600 hover:text-purple-900 text-sm font-medium"
             >
               View All
@@ -298,7 +298,7 @@ const MasterData = () => {
               <div className="text-center py-4">
                 <p className="text-gray-500">No suppliers found</p>
                 <button 
-                  onClick={() => navigate('/master-data/suppliers')}
+                  onClick={() => navigate('/app/master-data/suppliers')}
                   className="text-purple-600 hover:text-purple-900 text-sm mt-2"
                 >
                   Add First Supplier
@@ -314,7 +314,7 @@ const MasterData = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Product Categories</h2>
           <button 
-            onClick={() => navigate('/master-data/categories')}
+            onClick={() => navigate('/app/master-data/categories')}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Manage Categories
@@ -391,7 +391,7 @@ const MasterData = () => {
             <div className="col-span-3 text-center py-8">
               <p className="text-gray-500 mb-4">No categories found</p>
               <button 
-                onClick={() => navigate('/master-data/categories')}
+                onClick={() => navigate('/app/master-data/categories')}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 Create First Category

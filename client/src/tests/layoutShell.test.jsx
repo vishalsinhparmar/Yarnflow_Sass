@@ -9,9 +9,10 @@ import Modal from '../components/model/Modal';
 import Layout from '../layout/Layout';
 
 vi.mock('../components/NavbarApp/NavbarApp', () => ({ default: () => <div>Header</div> }));
+vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ canVisit: () => true }) }));
 
 const renderSidebar = (props = {}) => render(
-  <MemoryRouter initialEntries={['/purchase-order']}>
+  <MemoryRouter initialEntries={['/app/purchase-order']}>
     <SideBarApp {...props} />
   </MemoryRouter>
 );

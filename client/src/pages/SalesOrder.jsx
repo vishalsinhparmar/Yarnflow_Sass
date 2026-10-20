@@ -100,7 +100,7 @@ const SalesOrder = () => {
           break;
         case 'createChallan':
           // Navigate to sales-challan page with SO pre-selected
-          navigate('/sales-challan', { state: { selectedSalesOrderId: order._id, openCreateModal: true } });
+          navigate('/app/sales-challan', { state: { selectedSalesOrderId: order._id, openCreateModal: true } });
           break;
         default:
           break;

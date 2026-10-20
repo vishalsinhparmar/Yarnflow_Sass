@@ -82,7 +82,7 @@ const MasterDataDashboard = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Customers</h3>
           <div className="space-y-2">
-            <Link to="/master-data/customers" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
+            <Link to="/app/master-data/customers" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
               Manage Customers
             </Link>
             <ExcelImportButton type="customers" accentColor="blue" fullWidth sampleHeaders={CUSTOMER_SAMPLE_HEADERS} sampleData={CUSTOMER_SAMPLE_DATA} onImportSuccess={handleImportSuccess} />
@@ -100,7 +100,7 @@ const MasterDataDashboard = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Suppliers</h3>
           <div className="space-y-2">
-            <Link to="/master-data/suppliers" className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
+            <Link to="/app/master-data/suppliers" className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
               Manage Suppliers
             </Link>
             <ExcelImportButton type="suppliers" accentColor="purple" fullWidth sampleHeaders={SUPPLIER_SAMPLE_HEADERS} sampleData={SUPPLIER_SAMPLE_DATA} onImportSuccess={handleImportSuccess} />
@@ -118,7 +118,7 @@ const MasterDataDashboard = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Products</h3>
           <div className="space-y-2">
-            <Link to="/master-data/products" className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
+            <Link to="/app/master-data/products" className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
               Manage Products
             </Link>
             <ExcelImportButton type="products" accentColor="green" fullWidth sampleHeaders={PRODUCT_SAMPLE_HEADERS} sampleData={PRODUCT_SAMPLE_DATA} onImportSuccess={handleImportSuccess} />
@@ -136,7 +136,7 @@ const MasterDataDashboard = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Categories</h3>
           <div className="space-y-2">
-            <Link to="/master-data/categories" className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
+            <Link to="/app/master-data/categories" className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
               Manage Categories
             </Link>
             <ExcelImportButton type="categories" accentColor="orange" fullWidth sampleHeaders={CATEGORY_SAMPLE_HEADERS} sampleData={CATEGORY_SAMPLE_DATA} onImportSuccess={handleImportSuccess} />
@@ -154,7 +154,7 @@ const MasterDataDashboard = () => {
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Sub-Products</h3>
           <div className="space-y-2">
-            <Link to="/master-data/sub-products" className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
+            <Link to="/app/master-data/sub-products" className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center block">
               Manage Sub-Products
             </Link>
           </div>
@@ -167,7 +167,7 @@ const MasterDataDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Recent Customers</h2>
             <Link 
-              to="/master-data/customers"
+              to="/app/master-data/customers"
               className="text-blue-600 hover:text-blue-900 text-sm font-medium"
             >
               View All
@@ -202,7 +202,7 @@ const MasterDataDashboard = () => {
             ) : (
               <div className="text-center py-4">
                 <p className="text-gray-500">No customers found</p>
-                <Link to="/master-data/customers" className="text-blue-600 hover:text-blue-900 text-sm mt-2 block">
+                <Link to="/app/master-data/customers" className="text-blue-600 hover:text-blue-900 text-sm mt-2 block">
                   Add First Customer
                 </Link>
               </div>
@@ -214,7 +214,7 @@ const MasterDataDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Recent Suppliers</h2>
             <Link 
-              to="/master-data/suppliers"
+              to="/app/master-data/suppliers"
               className="text-purple-600 hover:text-purple-900 text-sm font-medium"
             >
               View All
@@ -246,7 +246,7 @@ const MasterDataDashboard = () => {
               <div className="text-center py-4">
                 <p className="text-gray-500">No suppliers found</p>
                 <Link 
-                  to="/master-data/suppliers"
+                  to="/app/master-data/suppliers"
                   className="text-purple-600 hover:text-purple-900 text-sm mt-2 block"
                 >
                   Add First Supplier
@@ -262,7 +262,7 @@ const MasterDataDashboard = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Product Categories</h2>
           <Link 
-            to="/master-data/categories"
+            to="/app/master-data/categories"
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Manage Categories
@@ -289,7 +289,7 @@ const MasterDataDashboard = () => {
             <div className="col-span-3 text-center py-8">
               <p className="text-gray-500 mb-4">No categories found</p>
               <Link 
-                to="/master-data/categories"
+                to="/app/master-data/categories"
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-block"
               >
                 Create First Category

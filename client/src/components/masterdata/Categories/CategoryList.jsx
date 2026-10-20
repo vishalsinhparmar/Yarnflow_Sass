@@ -168,7 +168,7 @@ const CategoryList = ({ onEdit, onRefresh, refreshTrigger }) => {
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-3 border-t gap-2">
                   <button
-                    onClick={() => navigate(`/master-data/products?category=${category._id}`)}
+                    onClick={() => navigate(`/app/master-data/products?category=${category._id}`)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex-1 justify-center"
                     title="View products in this category"
                   >

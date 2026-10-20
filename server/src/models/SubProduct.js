@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import tenantPlugin from '../saas/tenantPlugin.js';
 
 const subProductSchema = new mongoose.Schema({
   name: {
@@ -35,5 +36,7 @@ subProductSchema.post('save', async function () {
     console.error('SubProduct post-save hook error:', err.message);
   }
 });
+
+subProductSchema.plugin(tenantPlugin);
 
 export default mongoose.model('SubProduct', subProductSchema);
